@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh sách danh mục</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+
+<body>
+    <%- include('../partials/header') %>
+
+        <div class="container">
+            <h1>Danh sách danh mục</h1>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Tên danh mục</th>
+                        <th>Slug</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% categories.forEach(category=> { %>
+                        <tr>
+                            <td>
+                                <%= category.name %>
+                            </td>
+                            <td>
+                                <%= category.slug %>
+                            </td>
+                            <td>
+                                <form action="/categories/<%= category._id %>?_method=DELETE" method="POST">
+                                    <button type="submit" class="btn btn-danger">Xoá</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <% }) %>
+                </tbody>
+            </table>
+        </div>
+
+        <%- include('../partials/footer') %>
+</body>
+
+</html>
