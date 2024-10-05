@@ -17,13 +17,14 @@ const articleSchema = new Schema({
         type: String
     },
     category: {
-        type: String,
+        type: Schema.Types.ObjectId, // Reference to Category model
+        ref: 'Category',
         required: true
     },
     description: {
         type: String
     },
-    thumbnail: {
+    image: {
         type: String
     },
     content: {

@@ -1,46 +1,68 @@
-const Category = require('../models/category');
+const Category = require('../models/Category');
 
-// Thêm danh mục mới
-exports.createCategory = async (req, res) => {
+// Hiển thị danh sách danh mục
+exports.getCategories = async (req, res) => {
+    try {
+        const categories = await Category.find({});
+        res.render('categories/list', { categories });
+    } catch (error) {
+        res.status(500).send("Lỗi khi lấy danh sách danh mục");
+    }
+};
+
+// Hiển thị form thêm mới danh mục
+exports.addCategoryForm = (req, res) => {
+    res.render('categories/addCategory');
+};
+
+// Xử lý thêm danh mục
+exports.addCategory = async (req, res) => {
     try {
         const { name } = req.body;
-        const slug = generateSlug(name);
 
-        const newCategory = new Category({ name, slug });
+        const slug = name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+
+        const newCategory = new Category({
+            name,
+            slug,
+        });
+
         await newCategory.save();
         res.redirect('/categories');
     } catch (error) {
-        res.status(500).json({ message: 'Lỗi khi tạo danh mục', error });
+        res.status(500).send("Có lỗi xảy ra khi thêm danh mục.");
     }
 };
 
-// Lấy danh sách danh mục
-exports.getCategories = async (req, res) => {
+// Hiển thị form sửa danh mục
+exports.editCategoryForm = async (req, res) => {
     try {
-        const categories = await Category.find().sort({ createdAt: -1 });
-        res.render('categories/list', { categories });
+        const category = await Category.findById(req.params.id);
+        res.render('categories/editCategory', { category });
     } catch (error) {
-        res.status(500).json({ message: 'Lỗi lấy danh sách danh mục', error });
+        res.status(500).send("Lỗi khi lấy thông tin danh mục");
     }
 };
 
-// Xoá danh mục
-exports.deleteCategory = async (req, res) => {
+// Xử lý sửa danh mục
+exports.editCategory = async (req, res) => {
     try {
-        const { id } = req.params;
-        await Category.findByIdAndDelete(id);
+        const { name } = req.body;
+        const slug = name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+
+        await Category.findByIdAndUpdate(req.params.id, { name, slug });
         res.redirect('/categories');
     } catch (error) {
-        res.status(500).json({ message: 'Lỗi xoá danh mục', error });
+        res.status(500).send("Có lỗi xảy ra khi cập nhật danh mục.");
     }
 };
 
-// Tạo slug từ tên danh mục
-const generateSlug = (name) => {
-    return name
-        .toLowerCase()
-        .replace(/ /g, '-')
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^\w-]+/g, '');
+// Xử lý xóa danh mục
+exports.deleteCategory = async (req, res) => {
+    try {
+        await Category.findByIdAndDelete(req.params.id);
+        res.redirect('/categories');
+    } catch (error) {
+        res.status(500).send("Có lỗi xảy ra khi xóa danh mục.");
+    }
 };
