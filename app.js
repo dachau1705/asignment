@@ -1,37 +1,51 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const dotenv = require('dotenv');
-const articleRoutes = require('./routes/articleRoutes');
-const categoryRoutes = require('./routes/categoryRoutes');
-const path = require('path');
-const methodOverride = require('method-override');
+var createError = require('http-errors');
+var express = require('express');
+var path = require('path');
+var cookieParser = require('cookie-parser');
+var logger = require('morgan');
+const expressLayouts = require('express-ejs-layouts');
+require('./cron/schedule')
 
-dotenv.config();
-const app = express();
+var indexRouter = require('./routes/index');
+var usersRouter = require('./routes/users');
+var adminsRouter = require('./routes/admin/adminRouter');
+const bodyParser = require('body-parser');
 
-// Kết nối MongoDB
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => console.log('MongoDB connected'))
-    .catch(err => console.log('MongoDB connection error:', err));
 
-// Middleware
-app.use(methodOverride('_method'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+var app = express();
+app.use(expressLayouts);
+app.use(bodyParser.urlencoded({ extended: true }));
 
-// Thiết lập view engine
-app.set('view engine', 'ejs');
+// view engine setup
 app.set('views', path.join(__dirname, 'views'));
+app.set('layout', './layouts/admin')
+app.set('view engine', 'ejs');
 
-// Đường dẫn tĩnh
+
+app.use(logger('dev'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Route cho bài viết và danh mục
-app.use('/articles', articleRoutes);
-app.use('/categories', categoryRoutes);
+app.use('/', indexRouter);
+app.use('/users', usersRouter);
+app.use('/admin', adminsRouter);
 
-// Cổng
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+// catch 404 and forward to error handler
+app.use(function(req, res, next) {
+  next(createError(404));
 });
+
+// error handler
+app.use(function(err, req, res, next) {
+  // set locals, only providing error in development
+  res.locals.message = err.message;
+  res.locals.error = req.app.get('env') === 'development' ? err : {};
+
+  // render the error page
+  res.status(err.status || 500);
+  res.render('error');
+});
+
+module.exports = app;

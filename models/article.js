@@ -1,54 +1,57 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+const mongoose = require("mongoose");
+const AutoIncrement = require("mongoose-sequence")(mongoose)
 
-const articleSchema = new Schema({
-    title: {
-        type: String,
-        required: true,
-        minlength: 20,
-        maxlength: 100
-    },
-    slug: {
-        type: String,
-        unique: true,
-        required: true
-    },
-    originalLink: {
-        type: String
-    },
-    category: {
-        type: Schema.Types.ObjectId, // Reference to Category model
-        ref: 'Category',
-        required: true
-    },
-    description: {
-        type: String
-    },
-    image: {
-        type: String
-    },
-    content: {
-        type: String,
-        required: true
-    },
-    author: {
-        type: String,
-        required: true
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now
-    },
-    updatedAt: {
-        type: Date,
-        default: Date.now
-    },
-    status: {
-        type: String,
-        enum: ['duyet', 'chua_duyet', 'da_xoa'],
-        default: 'chua_duyet'
-    }
+const articleSchema = new mongoose.Schema({
+
+  title: {
+    type: String,
+    required: true, // bắt buộc
+    minlength: 10, // dài tối thiểu 20 ký tự
+    maxlength: 100, // dài tối đa 100 ký tự
+  },
+  slug: {
+    type: String,
+    required: true, // bắt buộc
+    unique: true, // slug phải là duy nhất cho mỗi bài viết
+  },
+  link: {
+    type: String,
+    required: true, // bắt buộc (link gốc của bài viết)
+  },
+  category: {
+    type: String,
+    required: false, // không bắt buộc
+  },
+  describe: {
+    type: String,
+    required: false, // không bắt buộc
+  },
+  avatar: {
+    type: String,
+    required: false, // không bắt buộc
+  },
+  detailed_information: {
+    type: String,
+    required: true, // bắt buộc
+  },
+  author: {
+    type: String,
+    required: true, // bắt buộc
+  },
+  create_at: {
+    type: Date,
+    default: () => new Date().toLocaleDateString('vi-VN') // Định dạng ngày tháng năm Việt Nam
+  },
+  update_at: {
+    type: Date,
+    default: () => new Date().toLocaleDateString('vi-VN') // Định dạng ngày tháng năm Việt Nam
+  },
+  status: {
+    type: Number,
+    enum: [-1, 0, 1], // chỉ cho phép các giá trị -1, 0, 1
+    default: 0, // mặc định là 0 (chưa duyệt)
+  },
 });
-
-const Article = mongoose.model('Article', articleSchema);
+articleSchema.plugin(AutoIncrement, { inc_field: 'id' });
+const Article = mongoose.model("article", articleSchema,"artile");
 module.exports = Article;
